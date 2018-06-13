@@ -22,13 +22,22 @@ Mat	CameraCalibration::getImageRef(){
 	return this-> imageRef_;
 }
 
+Mat	CameraCalibration::getCameraMatrix(){
+	return this-> cameraMatrix_;
+}
+
+Mat	CameraCalibration::getDistCoeffs(){
+	return this-> distCoeffs_;
+}
+
 void CameraCalibration::calibrate (Size bsz, double ss, bool& debug) {
-	this->imagesPts_.clear();
 	char key;
+	this->imagesPts_.clear();
 // read images and set images points 	
 	if (debug) {
 		cout << "\n<input images> : " << endl;
      	namedWindow("corners",WINDOW_NORMAL);
+		resizeWindow("corners",1000, 800);
 	} 
 	for (size_t k=0; k< this->fnImages_.size(); ++k)
 	{
@@ -69,6 +78,10 @@ void CameraCalibration::calibrate (Size bsz, double ss, bool& debug) {
 		}		
 	}
 
+// frame size of first image 
+	Size fs = this->images4calib_[0].size();
+
+// generate object points 
 	for (size_t row = 0; row < bsz.height; ++row)
     {
         for (size_t col = 0; col < bsz.width; ++col)
@@ -76,10 +89,10 @@ void CameraCalibration::calibrate (Size bsz, double ss, bool& debug) {
             this->objectsPts_[0].emplace_back(Point3f(col * ss, row * ss, 0));
         }
     }
-    this->objectsPts_.resize(this->imagesPts_.size(),objectsPts_[0]);
-	//cout << corners3d[0].size() << endl;
-    this->rms = calibrateCamera(this->objectsPts_, this->imagesPts_, this->images4calib_[0].size(), this->cameraMatrix_, this->distCoeffs_, this->rvecs_, this->tvecs_, CV_CALIB_RATIONAL_MODEL);
+    this->objectsPts_.resize(this->imagesPts_.size(),this->objectsPts_[0]);
 
+//calibrationMatrixValues or calibrateCamera
+    this->rms = calibrateCamera(this->objectsPts_, this->imagesPts_, fs , this->cameraMatrix_, this->distCoeffs_, this->rvecs_, this->tvecs_, CV_CALIB_RATIONAL_MODEL);
 
 // read reference image and set points vector 
 	this->imageRef_ = imread(fnRef_);
@@ -91,6 +104,7 @@ void CameraCalibration::calibrate (Size bsz, double ss, bool& debug) {
         	this->imageRef_.copyTo(imConrners);
 			drawChessboardCorners(imConrners, bsz ,this-> ptvecRef_ , true);
 			namedWindow("reference image",WINDOW_NORMAL);
+			resizeWindow("reference image",1000, 800);
 			imshow("reference image",imConrners);
 			waitKey(0);
 		}

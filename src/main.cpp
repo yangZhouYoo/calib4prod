@@ -40,11 +40,22 @@ int     main(int argc, char **argv)
 	string pathRefImage(pathImages + "refImage/");
 
 	CameraCalibration calibration1(pathImages,pathRefImage);
-//calibrationMatrixValues or calibrateCamera
+
 	calibration1.calibrate(bsz,ss,debug);
-
-
-
+	
+	int scale =30;
+	Mat imgUndist,m1,m2,newCameraMat;
+	namedWindow("imgUndist",cv::WINDOW_NORMAL);
+	resizeWindow("imgUndist",1000, 800);
+    createTrackbar("scale", "imgUndist", &scale, 100);
+	while (1) {
+		newCameraMat = cv::getOptimalNewCameraMatrix(calibration1.getCameraMatrix(), calibration1.getDistCoeffs(), cv::Size(640, 480), scale / 100.0f, cv::Size(640, 480), 0, true);	
+		initUndistortRectifyMap(calibration1.getCameraMatrix(), calibration1.getDistCoeffs(), cv::Mat::eye(3, 3, CV_64F), newCameraMat, cv::Size(640, 480), CV_32FC1, m1, m2);	
+		remap(calibration1.getImageRef(), imgUndist, m1, m2, cv::INTER_LINEAR);
+		imshow("imgUndist",imgUndist);
+		waitKey(1);
+	}
+/*
     const string inputSettingsFile = argc > 2 ? argv[2] : "settings.json";
 	Settings s1(inputSettingsFile);
 	Settings s2("settings_old.json");
@@ -56,11 +67,9 @@ int     main(int argc, char **argv)
 	updateJson(newJson,oldJson);
 
 
-	
-/*
-	cout << newJson << endl;
+
 	string encoding = settings.get("encoding","UTF-8").asString();
-	cout << encoding << endl;
+
 	cout << settings["camera"]["videoControls"]["deviceID"] << endl;
 */
     return (EXIT_SUCCESS);

@@ -33,6 +33,8 @@ class   CameraCalibration
 		String 					getFnRef() ;
 		vector<Mat> 			getImages4calib();
 		Mat			 			getImageRef();
+		Mat						getCameraMatrix();
+		Mat						getDistCoeffs();
 		
 		void 					calibrate(Size bsz,double ss ,bool& debug);
 
@@ -41,10 +43,12 @@ class   CameraCalibration
 		}
 
 	public:
-		double rms;
+		double 						rms;
+		float						scale;
 
 
 	private:
+
 		string 						pathImages_, pathRefImage_;
 		vector<String> 				fnImages_;
 		String 						fnRef_;	
@@ -53,7 +57,8 @@ class   CameraCalibration
 		Mat imageRef_;
 
 		vector<Mat>    				rvecs_, tvecs_;	
-		Mat 						cameraMatrix_;
+		Mat 						cameraMatrix_;	
+		Mat 						newCameraMatrix_;
 		Mat 						distCoeffs_;
 
 		vector<Point2f> 			ptvec_,ptvecRef_;
