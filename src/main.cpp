@@ -16,22 +16,17 @@
 using namespace std;
 using namespace cv;
 
-bool        debug = false ;
+bool        debug = true ;
+Size 		bsz(9,6);
 //const string folderImages = 
 
 int     main(int argc, char **argv)
 {	
-    const string inputSettingsFile = argc > 2 ? argv[2] : "settings.json";
-	Settings s1(inputSettingsFile);
-	Settings s2("settings_old.json");
-
-//calibrationMatrixValues or calibrateCamera
-
-
-	Json::Value newJson = s1.getJsonValue();
-	Json::Value oldJson = s2.getJsonValue();
-	updateJson(newJson,oldJson);
-
+	if (argc == 1)
+    {
+        cerr << "Path of input images required." << endl;
+        return (EXIT_FAILURE);
+    }
 
 	char cwd[256];		
     if (getcwd(cwd, sizeof(cwd)) == NULL)
@@ -43,23 +38,23 @@ int     main(int argc, char **argv)
 	string pathImages(string(cwd) + "/" + argv[1]); 
 	string pathRefImage(pathImages + "refImage/");
 
-	vector<String> fnImages, fnRef;
-	vector<Mat> images4calib;
+	CameraCalibration calibration1(pathImages,pathRefImage);
+//calibrationMatrixValues or calibrateCamera
+	calibration1.calibrate(bsz,debug);
 
-	glob(pathImages + "*.jpg",fnImages,false); // read jpg format image, recurse if "true"
-	glob(pathRefImage + "*.jpg",fnRef,false);
-	Mat refImage = imread(fnRef[0]);
-	for (size_t k=0; k<fnImages.size(); ++k)
-	{
-		cout << fnImages[k] << endl;
-		Mat im = imread(fnImages[k]);
-		if (im.empty()) continue; 
-		images4calib.push_back(im);
-	}
-	cout << refImage.size() << endl;
 
-	imshow("test",refImage);
-	waitKey(0); 
+
+    const string inputSettingsFile = argc > 2 ? argv[2] : "settings.json";
+	Settings s1(inputSettingsFile);
+	Settings s2("settings_old.json");
+
+
+
+	Json::Value newJson = s1.getJsonValue();
+	Json::Value oldJson = s2.getJsonValue();
+	updateJson(newJson,oldJson);
+
+
 	
 /*
 	cout << newJson << endl;

@@ -31,10 +31,10 @@ class   Settings
 		void			writeJsonValue();
 		
 		~Settings() { 
-			cout << "settings of " << filename_ << " finished" << endl;
+			cout << "settings of \"" << filename_ << "\" finished" << endl;
 		}
 
 	private:
-		std::string     filename_;
+		string     		filename_;
 		Json::Value 	event_;
 };
