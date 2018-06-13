@@ -6,10 +6,6 @@
 
 #include	<CameraCalibration.hpp>
 
-using namespace cv;
-using namespace std;
-
-
 vector<String> CameraCalibration::getFnImages() {
 	return this-> fnImages_;
 }
@@ -26,13 +22,13 @@ Mat	CameraCalibration::getImageRef(){
 	return this-> imageRef_;
 }
 
-void CameraCalibration::calibrate (Size bsz, bool debug) {
+void CameraCalibration::calibrate (Size bsz, double ss, bool& debug) {
 	this->imagesPts_.clear();
-	
+	char key;
+// read images and set images points 	
 	if (debug) {
 		cout << "\n<input images> : " << endl;
      	namedWindow("corners",WINDOW_NORMAL);
-		namedWindow("no corners",WINDOW_NORMAL);
 	} 
 	for (size_t k=0; k< this->fnImages_.size(); ++k)
 	{
@@ -45,7 +41,7 @@ void CameraCalibration::calibrate (Size bsz, bool debug) {
 		if (findChessboardCorners(im, bsz, this-> ptvec_)) {	
 			this->images4calib_.push_back(im);
 			this->imagesPts_.push_back(this-> ptvec_);
-		
+
 			if (debug) {
 				cout << "\"" << this->fnImages_[k] << "\"" << endl		
 				 << bsz << " chessboard corners found " << endl;
@@ -53,18 +49,39 @@ void CameraCalibration::calibrate (Size bsz, bool debug) {
    	        	im.copyTo(imConrners);
 				drawChessboardCorners(imConrners, bsz ,this-> ptvec_ , true);
             	imshow("corners", imConrners);
-            	waitKey(0);
+            	key = (char)waitKey(0);
+		        if( key  == 'q') {
+					debug = false;
+					cout << "<'q' pressed => quit debug mode>" << endl;
+				}	            
 			}
-		} else {
-			cout << "\"" << this->fnImages_[k] << "\"" << endl		
-				 << "!!! no chessboard corners found " << endl;
+		} else {		
 			if (debug) {
-				imshow("no corners", im);
-            	waitKey(0);
+				cout << "\"" << this->fnImages_[k] << "\"" << endl		
+				 << "!!! no chessboard corners found " << endl;
+				imshow("corners", im);
+            	key = (char)waitKey(0);
+		        if( key  == 'q') {
+					debug = false;
+					cout << "'q' pressed, quit debug mode" << endl;
+				}	
 			}
 		}		
 	}
 
+	for (size_t row = 0; row < bsz.height; ++row)
+    {
+        for (size_t col = 0; col < bsz.width; ++col)
+        {
+            this->objectsPts_[0].emplace_back(Point3f(col * ss, row * ss, 0));
+        }
+    }
+    this->objectsPts_.resize(this->imagesPts_.size(),objectsPts_[0]);
+	//cout << corners3d[0].size() << endl;
+    this->rms = calibrateCamera(this->objectsPts_, this->imagesPts_, this->images4calib_[0].size(), this->cameraMatrix_, this->distCoeffs_, this->rvecs_, this->tvecs_, CV_CALIB_RATIONAL_MODEL);
+
+
+// read reference image and set points vector 
 	this->imageRef_ = imread(fnRef_);
 	if (findChessboardCorners(this->imageRef_, bsz, this-> ptvecRef_)) {			
 		if (debug) {

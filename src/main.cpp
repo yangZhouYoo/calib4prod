@@ -17,6 +17,7 @@ using namespace std;
 using namespace cv;
 
 bool        debug = true ;
+float		ss = 32.3;
 Size 		bsz(9,6);
 //const string folderImages = 
 
@@ -40,7 +41,7 @@ int     main(int argc, char **argv)
 
 	CameraCalibration calibration1(pathImages,pathRefImage);
 //calibrationMatrixValues or calibrateCamera
-	calibration1.calibrate(bsz,debug);
+	calibration1.calibrate(bsz,ss,debug);
 
 
 

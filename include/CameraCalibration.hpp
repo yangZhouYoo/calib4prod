@@ -16,7 +16,12 @@ static double computeReprojectionErrors( const vector<vector<Point3f> >& objectP
 class   CameraCalibration
 {
 	public:
-		explicit CameraCalibration (const string pathImages, const string pathRefImage) : pathImages_(pathImages), pathRefImage_(pathRefImage) {
+		explicit CameraCalibration (const string pathImages, const string pathRefImage)
+			: pathImages_(pathImages), pathRefImage_(pathRefImage), objectsPts_(1),
+			  cameraMatrix_(Mat::eye(3, 3, CV_64F)),
+			  distCoeffs_(Mat::zeros(8, 1, CV_64F))	
+	 
+		{
 					
 			vector<String> fnRef;
 			glob(pathImages + "*.jpg",fnImages_,false); // read jpg format image, recurse if "true"
@@ -29,21 +34,31 @@ class   CameraCalibration
 		vector<Mat> 			getImages4calib();
 		Mat			 			getImageRef();
 		
-		void 					calibrate(Size bsz,bool debug);
+		void 					calibrate(Size bsz,double ss ,bool& debug);
 
 		~CameraCalibration() {
 			cout << "calibration finished" << endl;
 		}
 
-	private:
-		string pathImages_, pathRefImage_;
-		vector<String> fnImages_;
-		String fnRef_;
-		vector<Mat> images4calib_;
+	public:
+		double rms;
 
-		vector<Point2f> ptvec_,ptvecRef_;
-		vector<vector<Point2f> > imagesPts_;
+
+	private:
+		string 						pathImages_, pathRefImage_;
+		vector<String> 				fnImages_;
+		String 						fnRef_;	
+
+		vector<Mat> 				images4calib_;
 		Mat imageRef_;
+
+		vector<Mat>    				rvecs_, tvecs_;	
+		Mat 						cameraMatrix_;
+		Mat 						distCoeffs_;
+
+		vector<Point2f> 			ptvec_,ptvecRef_;
+		vector<vector<Point2f>> 	imagesPts_;
+		vector<vector<Point3f>> 	objectsPts_;
 };
 
 
